@@ -1,0 +1,26 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+coverage/
+
+# logs
+*.log
+npm-debug.log*
+
+# environment
+.env
+.env.*
+
+# editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.tmp
+
+# tooling caches
+.eslintcache
+.vite/

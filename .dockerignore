@@ -1,0 +1,17 @@
+node_modules
+dist
+coverage
+.git
+.vite
+.eslintcache
+*.log
+.env
+.env.*
+Dockerfile*
+.dockerignore
+docker-compose*.yml
+.vscode
+.idea
+specs
+.specify
+.claude
