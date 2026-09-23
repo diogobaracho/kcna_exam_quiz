@@ -28,10 +28,11 @@ describe('SetupForm', () => {
 
     await user.click(screen.getByRole('button', { name: '10' }));
     await user.click(screen.getByRole('button', { name: /Start practice \(10 questions\)/ }));
+    // Domains without questions are dropped from the selection.
     expect(onStart).toHaveBeenCalledWith({
       mode: 'practice',
       count: 10,
-      categories: DEFAULT_SETTINGS.categories,
+      categories: ['kubernetes-fundamentals', 'container-orchestration', 'cloud-native-observability'],
       topics: null,
       distribution: 'weighted',
       timerEnabled: false,
@@ -66,7 +67,7 @@ describe('SetupForm', () => {
 
   it('lets the learner narrow down to topics', async () => {
     const { onStart, onChange, user } = setup({ ...DEFAULT_SETTINGS, categories: ['kubernetes-fundamentals'] });
-    await user.click(screen.getByRole('button', { name: 'topics' }));
+    await user.click(screen.getByRole('button', { name: 'Show topics for Kubernetes Fundamentals' }));
     const topicsPanel = document.getElementById('topics-kubernetes-fundamentals')!;
     await user.click(within(topicsPanel).getByLabelText('Architecture (12)'));
     expect(screen.getByTestId('available-count')).toHaveTextContent('8 questions available');
@@ -84,7 +85,7 @@ describe('SetupForm', () => {
     expect(screen.getByRole('button', { name: /Start practice/ })).toBeDisabled();
 
     // Selecting a topic of an unselected category selects that category with only that topic
-    await user.click(screen.getAllByRole('button', { name: 'topics' })[0]);
+    await user.click(screen.getByRole('button', { name: 'Show topics for Container Orchestration' }));
     const coPanel = document.getElementById('topics-container-orchestration')!;
     await user.click(within(coPanel).getByLabelText('Runtime (5)'));
     expect(screen.getByLabelText('Container Orchestration (5)')).toBeChecked();

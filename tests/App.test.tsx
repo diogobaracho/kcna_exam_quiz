@@ -15,7 +15,9 @@ function renderApp(path = '/') {
 }
 
 describe('App (end to end with the real question bank)', () => {
-  afterEach(() => vi.restoreAllMocks());
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
 
   it('runs a practice session, shows results and stores the attempt', async () => {
     const user = renderApp();

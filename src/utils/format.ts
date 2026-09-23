@@ -1,4 +1,5 @@
 export const OPTION_LETTERS = ['A', 'B', 'C', 'D', 'E'];
+export const COUNT_PRESETS = [10, 20, 40, 60];
 
 export function formatClock(totalSeconds: number): string {
   const s = Math.max(0, Math.floor(totalSeconds));

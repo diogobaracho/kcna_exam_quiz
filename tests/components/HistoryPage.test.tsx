@@ -23,7 +23,9 @@ const weakAttempt = makeAttempt('weak', [1, 1, 0, 0]); // scheduling 1/3, archit
 const strongAttempt = makeAttempt('strong', [0, 0, 0, 0]);
 
 describe('HistoryPage', () => {
-  afterEach(() => vi.restoreAllMocks());
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
 
   it('lists attempts, aggregates accuracy and shows focus suggestions', () => {
     const attempts = [strongAttempt, weakAttempt];

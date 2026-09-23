@@ -4,9 +4,7 @@ import { orderedCategories } from '../../domain/categories';
 import { countFor, topicsByCategory } from '../../domain/questionBank';
 import type { CategoryId, Question, SessionConfig } from '../../domain/types';
 import { MAX_COUNT, type QuizSettings } from '../../storage/settingsStore';
-import { topicLabel } from '../../utils/format';
-
-export const COUNT_PRESETS = [10, 20, 40, 60];
+import { COUNT_PRESETS, topicLabel } from '../../utils/format';
 
 interface Props {
   bank: Question[];
@@ -22,24 +20,40 @@ function sameSet(a: string[], b: string[]): boolean {
 }
 
 export function SetupForm({ bank, initial, onStart, onChange }: Props) {
-  const [settings, setSettings] = useState<QuizSettings>(initial);
-  const [expanded, setExpanded] = useState<Partial<Record<CategoryId, boolean>>>({});
   const topics = useMemo(() => topicsByCategory(bank), [bank]);
   const categories = orderedCategories();
 
   const allKeysFor = (ids: CategoryId[]) => ids.flatMap((id) => topics[id].map((t) => t.key));
 
+  /** Keep categories in display order, drop empty ones, collapse "all topics" to null. */
   const normalize = (next: QuizSettings): QuizSettings => {
-    const ordered = categories.map((c) => c.id).filter((id) => next.categories.includes(id));
+    const ordered = categories
+      .map((c) => c.id)
+      .filter((id) => next.categories.includes(id) && topics[id].length > 0);
     let nextTopics = next.topics;
     if (nextTopics && sameSet(nextTopics, allKeysFor(ordered))) nextTopics = null;
     return { ...next, categories: ordered, topics: nextTopics };
   };
 
+  const [settings, setSettings] = useState<QuizSettings>(() => normalize(initial));
+  const [countText, setCountText] = useState(String(initial.count));
+  const [expanded, setExpanded] = useState<Partial<Record<CategoryId, boolean>>>({});
+
   const update = (patch: Partial<QuizSettings>) => {
     const next = normalize({ ...settings, ...patch });
     setSettings(next);
     onChange?.(next);
+  };
+
+  const setCount = (count: number) => {
+    setCountText(String(count));
+    update({ count });
+  };
+
+  const handleCountInput = (raw: string) => {
+    setCountText(raw);
+    const parsed = Number.parseInt(raw, 10);
+    if (Number.isFinite(parsed) && parsed >= 1) update({ count: Math.min(MAX_COUNT, parsed) });
   };
 
   const toggleCategory = (id: CategoryId) => {
@@ -126,7 +140,7 @@ export function SetupForm({ bank, initial, onStart, onChange }: Props) {
                     type="button"
                     variant={settings.count === preset ? 'primary' : 'outline-primary'}
                     active={settings.count === preset}
-                    onClick={() => update({ count: preset })}
+                    onClick={() => setCount(preset)}
                   >
                     {preset}
                   </Button>
@@ -138,12 +152,10 @@ export function SetupForm({ bank, initial, onStart, onChange }: Props) {
                 min={1}
                 max={MAX_COUNT}
                 style={{ maxWidth: '7rem' }}
-                value={settings.count}
+                value={countText}
                 aria-label="Custom number of questions"
-                onChange={(event) => {
-                  const parsed = Number.parseInt(event.target.value, 10);
-                  if (Number.isFinite(parsed)) update({ count: Math.min(MAX_COUNT, Math.max(1, parsed)) });
-                }}
+                onChange={(event) => handleCountInput(event.target.value)}
+                onBlur={() => setCountText(String(settings.count))}
               />
             </div>
           </Form.Group>
@@ -174,6 +186,7 @@ export function SetupForm({ bank, initial, onStart, onChange }: Props) {
                         className="p-0"
                         aria-expanded={open}
                         aria-controls={`topics-${category.id}`}
+                        aria-label={`${open ? 'Hide' : 'Show'} topics for ${category.name}`}
                         onClick={() => setExpanded({ ...expanded, [category.id]: !open })}
                       >
                         {open ? 'hide topics' : 'topics'}
